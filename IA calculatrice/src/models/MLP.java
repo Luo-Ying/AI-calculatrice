@@ -4,6 +4,9 @@ package models;
 
 import layers.LayerLinear;
 import losses.ILoss;
+import transfertFunctions.ITransfertFunction;
+import utils.IInitialiseBias;
+import utils.IInitialiseWeights;
 
 public class MLP implements IModel {
 	
@@ -17,9 +20,15 @@ public class MLP implements IModel {
 //	public LossDifference lossFunction = new LossDifference();
 	
 //	public List<LayerLinear> layerList = new ArrayList<LayerLinear>() ;
-//	public MLP(int nbCouche) {
-//		this.layerList = new LayerLinear[nbCouche];
-//	}
+	public MLP(int nbLayers, int inputSize, int outputSize, double lr, IInitialiseWeights initWeights, IInitialiseBias initBias, ITransfertFunction tf) {
+		this.layerList = new LayerLinear[nbLayers];
+		this.input = new double[inputSize];
+		this.output = new double[outputSize];
+		this.predicted = new double[outputSize];
+		for(int i=0; i<nbLayers; i++) {
+			this.layerList[i] = new LayerLinear(inputSize, outputSize, lr, initWeights, initBias, tf);
+		}
+	}
 	
 	// Calculer l'erreur pour l'afficher dans la console
 	public double getLoss (double[] dy) {
@@ -44,10 +53,11 @@ public class MLP implements IModel {
 	@Override
 	public double[] forward(double[] input) {
 		// TODO Auto-generated method stub
+		double[] predicted = input;
 		for(int i=0; i<layerList.length; i++) {
-			input = layerList[i].forward(input);	// Appel la methode backward de layer
+			predicted = layerList[i].forward(predicted);	// Appel la methode backward de layer
 		}
-		return input;
+		return predicted;
 	}
 
 	@Override
