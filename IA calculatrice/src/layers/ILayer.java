@@ -6,10 +6,10 @@ import neurons.INeuron;
 
 public interface ILayer {
 	
-	public List<INeuron> list = new ArrayList<INeuron>(); 
+	public List<INeuron> neuronList = new ArrayList<INeuron>(); 
 	// matrice
 	
-	public abstract double[] formard(double[] input);
+	public abstract double[] forward(double[] input);
 	
 	public abstract double[] backward(double[] dy);
 	

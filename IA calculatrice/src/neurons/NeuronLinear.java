@@ -21,7 +21,7 @@ public class NeuronLinear implements INeuron {
 	}
 
 	@Override
-	public double formard(double[] input) {
+	public double forward(double[] input) {
 		// TODO Auto-generated method stub
 		this.xt = input;
 		double output = 0.0;

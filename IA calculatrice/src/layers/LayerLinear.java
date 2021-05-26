@@ -14,21 +14,22 @@ public class LayerLinear implements ILayer {
 	
 	public LayerLinear(int inputSize, int outputSize, double lr, IInitialiseWeights initWeights, IInitialiseBias initBias, ITransfertFunction tf) {
 		for(int i=0; i<outputSize; i++) {
+//			this.neuronList = new List<NeuronLinear>();
 			this.neuronList.add(new NeuronLinear(lr,inputSize,initWeights,initBias,tf));
 		}
 	}
 	
 	public int size() {
-		return list.size();
+		return neuronList.size();
 	}
 
 	@Override
-	public double[] formard(double[] input) {
+	public double[] forward(double[] input) {
 		// TODO Auto-generated method stub
 		double[] out = new double[this.size()];
 		int pos = 0;
-		for(NeuronLinear neuron: neuronList) {
-			out[pos++] = neuron.formard(input);
+		for(NeuronLinear neuron: neuronList) {		// Boucle for a modifier ...
+			out[pos++] = neuron.forward(input);		// Appel la methode forward de neurone
 		}
 		return out;
 	}
