@@ -1,6 +1,10 @@
 package utils;
 
 public class InitialiseWeightsNormal implements IInitialiseWeights {
+	
+	public InitialiseWeightsNormal() {
+		
+	}
 
 	@Override
 	public double[] initWeights(int size) {

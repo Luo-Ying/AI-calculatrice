@@ -1,6 +1,10 @@
 package utils;
 
 public class InitialiseBiasNormal implements IInitialiseBias {
+	
+	public InitialiseBiasNormal() {
+		
+	}
 
 	@Override
 	public double initBias() {

@@ -1,6 +1,9 @@
 package models;
 
+import java.io.Serializable;
+
 //import java.util.*;
+import exceptions.*;
 
 import layers.LayerLinear;
 import losses.ILoss;
@@ -8,7 +11,12 @@ import transfertFunctions.ITransfertFunction;
 import utils.IInitialiseBias;
 import utils.IInitialiseWeights;
 
-public class MLP implements IModel {
+public class MLP implements IModel,Serializable{
+	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 4514812293542656565L;
 	
 	private LayerLinear[] layerList;
 	private ILoss lossFunction;
@@ -20,23 +28,42 @@ public class MLP implements IModel {
 //	public LossDifference lossFunction = new LossDifference();
 	
 //	public List<LayerLinear> layerList = new ArrayList<LayerLinear>() ;
-	public MLP(int nbLayers, int inputSize, int outputSize, double lr, IInitialiseWeights initWeights, IInitialiseBias initBias, ITransfertFunction tf) {
+	public MLP(int nbLayers, int inputSize, int outputSize, double lr, IInitialiseWeights initWeights, IInitialiseBias initBias, ITransfertFunction tf, ILoss lossFunction) {
 		this.layerList = new LayerLinear[nbLayers];
 		this.input = new double[inputSize];
 		this.output = new double[outputSize];
 		this.predicted = new double[outputSize];
-		for(int i=0; i<nbLayers; i++) {
-			this.layerList[i] = new LayerLinear(inputSize, outputSize, lr, initWeights, initBias, tf);
+		this.lossFunction = lossFunction;
+		
+		int layerOut = (inputSize + outputSize)/nbLayers ;
+//		int layerOut = outputSize;
+		int layerIn = inputSize;
+//		for most problems, one could probably get decent performance (even without a second optimization step) 
+//		by setting the hidden layer configuration using just two rules: (i) number of hidden layers equals one; 
+//		and (ii) the number of neurons in that layer is the mean of the neurons in the input and output layers.
+		
+		for(int i=0; i<nbLayers-1; i++) {
+			this.layerList[i] = new LayerLinear(layerIn, layerOut, lr, initWeights, initBias, tf);
+			layerIn = layerOut;
+			layerOut += (layerIn + outputSize)/nbLayers;  
 		}
+		this.layerList[nbLayers-1] = new LayerLinear(layerIn, outputSize, lr, initWeights, initBias, tf);
 	}
 	
 	// Calculer l'erreur pour l'afficher dans la console
-	public double getLoss (double[] dy) {
-		double loss = 0.0;
-		for(int i=0; i<dy.length; i++) {
-			loss += dy[i];
+	public double getLoss (double[] dy) throws AiExceptionLoss {
+		
+		try {
+			double loss = 0.0;
+			for(int i=0; i<dy.length; i++) {
+				loss += dy[i];
+			}
+			return loss /= dy.length;
+			
+		} catch (Exception e) {
+			// TODO: handle exception
+			throw new AiExceptionLoss("Erreur MLP",ErrorLevel.MODEL);
 		}
-		return loss /= dy.length;
 	}
 	
 	// Recuperer le plus grand indice contenu dans le tableau pour trouver la valeur predite
@@ -44,36 +71,67 @@ public class MLP implements IModel {
 		int max = -1;
 		double maxValue = -Double.MIN_VALUE;
 		for(int i=0; i<t.length; i++) {
-			maxValue = t[i];
-			max = i;
+			if (t[i] > maxValue) {
+				
+				maxValue = t[i];
+				max = i;
+			}
 		}
 		return max;
 	}
 
 	@Override
-	public double[] forward(double[] input) {
-		// TODO Auto-generated method stub
-		double[] predicted = input;
-		for(int i=0; i<layerList.length; i++) {
-			predicted = layerList[i].forward(predicted);	// Appel la methode backward de layer
-		}
-		return predicted;
-	}
-
-	@Override
-	public double backward(double[] output, double[] predicted) {
-		// TODO Auto-generated method stub
-		double[] loss = this.lossFunction.loss(output, predicted);
-		for(int i=layerList.length-1; i>=0; i--) {
-			loss = layerList[i].backward(loss);		// Appel la methode backward de layer
-		}
-		return getLoss(loss);
-	}
-
-	@Override
-	public void learn() {
+	public double[] forward(double[] input) throws AiExceptionForward {
 		// TODO Auto-generated method stub
 		
+		try {
+			double[] predicted = input;
+			for(int i=0; i<layerList.length; i++) {
+				predicted = layerList[i].forward(predicted);	// Appel la methode backward de layer
+			}
+			return predicted;
+			
+		} catch (Exception e) {
+			// TODO: handle exception
+			throw new AiExceptionForward("Erreur MLP",ErrorLevel.MODEL);
+		}
+	}
+
+	@Override
+	public double backward(double[] output, double[] predicted) throws AiExceptionBackward{
+		// TODO Auto-generated method stub
+		
+		try {
+			double[] loss = this.lossFunction.loss(output, predicted);
+			for(int i=layerList.length-1; i>=0; i--) {
+				loss = layerList[i].backward(loss);		// Appel la methode backward de layer
+			}
+			return getLoss(loss);
+			
+		} catch (Exception e) {
+			// TODO: handle exception
+			throw new AiExceptionBackward("Erreur MLP",ErrorLevel.MODEL);
+		}
+		
+		
+	}
+
+	@Override
+	public double learn(double[] input,double[] output) {
+		// TODO Auto-generated method stub
+		
+//		for (double d : output) {
+//			System.out.print(" ouput learn: "+d);
+//		}
+		
+		try {
+			this.predicted = forward(input);
+			loss = backward(output,this.predicted);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return loss;
 	}
 	
 }

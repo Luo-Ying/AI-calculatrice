@@ -2,7 +2,8 @@ package models;
 
 import java.util.*;
 
-import layers.ILayer;
+import exceptions.AiExceptionBackward;
+import exceptions.AiExceptionForward;
 import neurons.INeuron;
 
 public interface IModel {
@@ -12,10 +13,10 @@ public interface IModel {
 	
 	public List<INeuron> list = new ArrayList<INeuron>(); 
 
-	public abstract double[] forward(double[] input);
+	public abstract double[] forward(double[] input) throws AiExceptionForward;
 	
-	public abstract double backward(double[] output, double[] predicted);
+	public abstract double backward(double[] output, double[] predicted) throws AiExceptionBackward;
 	
-	public abstract void learn();
+	public abstract double learn(double[] input, double[] output);
 	
 }
